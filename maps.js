@@ -24,13 +24,13 @@ const svg = d3
   .attr('width', width)
   .attr('height', height)
 
-d3.json('uk.json', function (error, uk) {
+d3.json('uk-vlow.geo.json', function (error, uk) {
   if (error) {
     console.log(error)
   }
   const subunitSelection = svg
     .selectAll('.subunit')
-    .data(topojson.feature(uk, uk.objects.subunits).features)
+    .data(uk.features)
     .enter()
     .append('path')
     .attr('class', function (d) {
@@ -38,44 +38,40 @@ d3.json('uk.json', function (error, uk) {
     })
     .attr('d', path)
 
-  const placeSelection = svg
-    .append('path')
-    .datum(topojson.feature(uk, uk.objects.places))
-    .attr('d', path)
-    .attr('class', 'place')
+  // const placeSelection = svg
+  //   .selectAll('.place-label')
+  //   .data(topojson.feature(uk, uk.objects.places).features)
+  //   .enter()
+  //   .append('path')
+  //   .attr('d', path)
+  //   .attr('class', 'place')
 
-  const placeLabelSelection = svg
-    .selectAll('.place-label')
-    .data(topojson.feature(uk, uk.objects.places).features)
-    .enter()
-    .append('text')
-    .attr('class', 'place-label')
-    .attr('transform', function (d) {
-      return 'translate(' + projection(d.geometry.coordinates) + ')'
-    })
-    .attr('x', function (d) {
-      return d.geometry.coordinates[0] > -1 ? 6 : -6
-    })
-    .attr('dy', '.35em')
-    .style('text-anchor', function (d) {
-      return d.geometry.coordinates[0] > -1 ? 'start' : 'end'
-    })
-    .text(function (d) {
-      return d.properties.name
-    })
+  // const placeLabelSelection = svg
+  //   .selectAll('.place-label')
+  //   .data(topojson.feature(uk, uk.objects.places).features)
+  //   .enter()
+  //   .append('text')
+  //   .attr('class', 'place-label')
+  //   .attr('transform', d => `translate(${projection(d.geometry.coordinates)})`)
+  //   .attr('x', d => d.geometry.coordinates[0] > -1 ? 6 : -6)
+  //   .attr('dy', '.35em')
+  //   .style('text-anchor', d => d.geometry.coordinates[0] > -1 ? 'start' : 'end')
+  //   .text(d => d.properties.name)
   const zoomHandler = d3.zoom().on('zoom', zoomActions)
 
   function zoomActions () {
-    [subunitSelection, placeSelection].forEach(selection => {
+    [subunitSelection /*, placeSelection */].forEach(selection => {
       selection.attr('transform', d3.event.transform)
     })
+    /*
     placeLabelSelection.attr('transform', function (d) {
       return `
         ${d3.event.transform}
         translate(${projection(d.geometry.coordinates)})
       `
     })
-  }
+    */
+  };
 
   svg.call(zoomHandler)
 })
