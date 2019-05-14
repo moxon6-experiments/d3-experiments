@@ -38,12 +38,6 @@ var effectLayer = g.append("g").classed("effect-layer", true);
 
 var mapLayer = g.append("g").classed("map-layer", true);
 
-var dummyText = g
-  .append("text")
-  .classed("dummy-text", true)
-  .attr("x", 10)
-  .attr("y", 30)
-  .style("opacity", 0);
 
 var bigText = g
   .append("text")

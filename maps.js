@@ -1,31 +1,81 @@
-var width = 960,
-    height = 1160;
+/* global d3 */
+/* global topojson */
 
-var projection = d3.geoAlbers()
-    .center([0, 55.4])
-    .rotate([4.4, 0])
-    .parallels([50, 60])
-    .scale(6000)
-    .translate([width / 2, height / 2]);
+const width = 960
 
-var path = d3.geoPath()
-    .projection(projection);
+const height = 1160
 
-var svg = d3.select("body").append("svg")
-    .attr("width", width)
-    .attr("height", height);
+const projection = d3
+  .geoAlbers()
+  .center([0, 55.4])
+  .rotate([4.4, 0])
+  .parallels([50, 60])
+  .scale(1200 * 5)
+  .translate([width / 2, height / 2])
 
-d3.json("uk.json", function(error, uk) {
+const path = d3
+  .geoPath()
+  .projection(projection)
+  .pointRadius(2)
 
-  var subunits = topojson.feature(uk, uk.objects.subunits);
-  var path = d3.geoPath().projection(projection);
+const svg = d3
+  .select('body')
+  .append('svg')
+  .attr('width', width)
+  .attr('height', height)
 
-  svg.append("path")
-      .datum(subunits)
-      .attr("d", path);
-  svg.selectAll('.subunit')
-      .data(topojson.feature(uk, uk.objects.subunits).features)
-    .enter().append('path')
-      .attr('class', d => 'subunit ' + d.id)
-      .attr('d', path)
-});
+d3.json('uk.json', function (error, uk) {
+  if (error) {
+    console.log(error)
+  }
+  const subunitSelection = svg
+    .selectAll('.subunit')
+    .data(topojson.feature(uk, uk.objects.subunits).features)
+    .enter()
+    .append('path')
+    .attr('class', function (d) {
+      return 'subunit ' + d.id
+    })
+    .attr('d', path)
+
+  const placeSelection = svg
+    .append('path')
+    .datum(topojson.feature(uk, uk.objects.places))
+    .attr('d', path)
+    .attr('class', 'place')
+
+  const placeLabelSelection = svg
+    .selectAll('.place-label')
+    .data(topojson.feature(uk, uk.objects.places).features)
+    .enter()
+    .append('text')
+    .attr('class', 'place-label')
+    .attr('transform', function (d) {
+      return 'translate(' + projection(d.geometry.coordinates) + ')'
+    })
+    .attr('x', function (d) {
+      return d.geometry.coordinates[0] > -1 ? 6 : -6
+    })
+    .attr('dy', '.35em')
+    .style('text-anchor', function (d) {
+      return d.geometry.coordinates[0] > -1 ? 'start' : 'end'
+    })
+    .text(function (d) {
+      return d.properties.name
+    })
+  const zoomHandler = d3.zoom().on('zoom', zoomActions)
+
+  function zoomActions () {
+    [subunitSelection, placeSelection].forEach(selection => {
+      selection.attr('transform', d3.event.transform)
+    })
+    placeLabelSelection.attr('transform', function (d) {
+      return `
+        ${d3.event.transform}
+        translate(${projection(d.geometry.coordinates)})
+      `
+    })
+  }
+
+  svg.call(zoomHandler)
+})
